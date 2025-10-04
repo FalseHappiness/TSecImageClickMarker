@@ -25,17 +25,23 @@ def is_valid_marked_dir(dir_path):
     return required_files.issubset(existing_files)
 
 
+def show_help_msg():
+    messagebox.showinfo('帮助', """腾讯天御图形点选验证码采集工具 https://github.com/FalseHappiness/TSecImageClickMarker
+选择输出目录，点击开始采集，然后在背景图上标记。左键点击开始标记一个块，右键点击一个标记点完成标记一个块。右键点击标记好的块的一个点可删除这个快。
+""")
+
+
 # noinspection PyArgumentList,PyTypeChecker
 class CaptchaMarkerApp:
     def __init__(self, rt):
         self.root = rt
-        self.root.title("腾讯验证码采集工具")
+        self.root.title("腾讯天御图形点选验证码采集工具")
 
         # 初始化变量
         self.total_count = tk.IntVar(value=100)
         self.start_index = tk.IntVar(value=1)
         self.current_index = 0
-        self.output_dir = ""
+        self.output_dir = tk.StringVar(value="./output")
         self.browse_dir = ""  # 浏览模式下的目录
         self.browse_mode = False  # 是否处于浏览模式
         self.browse_files = []  # 浏览模式下的文件列表
@@ -90,7 +96,7 @@ class CaptchaMarkerApp:
 
         # 输出目录设置
         ttk.Label(control_frame, text="输出目录:").grid(row=2, column=0, sticky=tk.W)
-        self.output_dir_entry = ttk.Entry(control_frame, width=30)
+        self.output_dir_entry = ttk.Entry(control_frame, textvariable=self.output_dir, width=30)
         self.output_dir_entry.grid(row=2, column=1, sticky=tk.W)
         ttk.Button(control_frame, text="浏览...", command=self.select_output_dir).grid(row=2, column=2)
 
@@ -110,6 +116,9 @@ class CaptchaMarkerApp:
         # 状态信息
         self.status_label = ttk.Label(control_frame, text="准备就绪")
         self.status_label.grid(row=7, column=0, columnspan=3, pady=10)
+
+        # 帮助按钮
+        ttk.Button(control_frame, text="帮助", command=show_help_msg).grid(row=6, column=0, columnspan=3)
 
         # 图像显示框架
         image_frame = ttk.Frame(self.root)
@@ -157,14 +166,14 @@ class CaptchaMarkerApp:
         # 生成随机字符作为默认输出目录
         rand_str = ''.join(random.choices(string.ascii_letters + string.digits, k=8))
         default_dir = os.path.join(os.getcwd(), f"output_{rand_str}")
-        self.output_dir = default_dir
+        self.output_dir.set(default_dir)
         self.output_dir_entry.delete(0, tk.END)
         self.output_dir_entry.insert(0, default_dir)
 
     def select_output_dir(self):
         dir_path = filedialog.askdirectory()
         if dir_path:
-            self.output_dir = dir_path
+            self.output_dir.set(dir_path)
             self.output_dir_entry.delete(0, tk.END)
             self.output_dir_entry.insert(0, dir_path)
 
@@ -333,7 +342,7 @@ class CaptchaMarkerApp:
         self.save_button.config(text="保存并下一张")
 
         # 创建输出目录
-        os.makedirs(self.output_dir, exist_ok=True)
+        os.makedirs(self.output_dir.get(), exist_ok=True)
 
         # 在后台线程中开始采集
         threading.Thread(target=self.capture_loop, daemon=True).start()
@@ -569,7 +578,7 @@ class CaptchaMarkerApp:
 
     def save_data(self, bg_img_data, sprite_img_data):
         # 创建序号文件夹
-        save_dir = os.path.join(self.output_dir, str(self.current_index))
+        save_dir = os.path.join(self.output_dir.get(), str(self.current_index))
         os.makedirs(save_dir, exist_ok=True)
 
         # 保存图片

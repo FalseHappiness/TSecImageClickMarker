@@ -1,10 +1,11 @@
 # 腾讯天御图形点选验证码标记器
 
-用于标记腾讯天御图形点选验证码。
+用于标记腾讯天御图形点选验证码，用于机器学习研究或正确率检测。
 
 ## 使用
 
 使用 Python 3.11.0 安装 requirements.txt，然后运行 main.py 即可。
+![介绍图](https://raw.githubusercontent.com/FalseHappiness/TSecImageClickMarker/refs/heads/main/introduction.png "介绍图")
 
 ## 处理数据
 
